@@ -13,8 +13,12 @@ let delivery;
 
 const renderer = createRenderer();
 const camera = createCamera();
-const scene = new THREE.Scene();
+// Ajusta la posición y orientación de la cámara para seguir al objeto 'delivery'
+const cameraOffset = new THREE.Vector3(0, -10, 10); // Ajusta según sea necesario
 
+const scene = new THREE.Scene();
+// Color de fondo de la escena
+scene.background = new THREE.Color(0xffffff); // Puedes cambiar el código de color según tus preferencias
 
 /* Function to automatize the resize of the nav page */
 window.addEventListener("resize", function () {
@@ -33,6 +37,7 @@ controls.dampingFactor = 0.1;
 loadModel("delivery", scene).then((loadedObject) => {
 // Acceder al objeto 3D
   delivery = loadedObject.scene;
+  console.log("Se ha cargado delivery");
 }).catch((error) => {
   console.error("Error cargando el modelo", error);
 });
@@ -55,6 +60,8 @@ let keyMap = {
 let velocidadX = 0;
 let velocidadY = 0;
 let velocidadAngular = 0;
+const friccionAngular = 0.9; // Ajusta según sea necesario
+const aceleracionAngular = 0.002; // Ajusta según sea necesario
 const friccion = 0.95; // Ajusta según sea necesario
 const velocidadAngularMax = 0.03; // Ajusta según sea necesario
 
@@ -72,7 +79,7 @@ function animate() {
   // Control de velocidad y rotación
   velocidadX *= friccion;
   velocidadY *= friccion;
-  velocidadAngular *= friccion;
+  velocidadAngular *= friccionAngular;
 
   if (keyMap.KeyW) {
     velocidadY += 0.01;
@@ -82,17 +89,23 @@ function animate() {
   }
   if (keyMap.KeyA) {
     velocidadX -= 0.01;
-    velocidadAngular = Math.min(velocidadAngular + 0.001, velocidadAngularMax);
+    velocidadAngular += aceleracionAngular;
   }
   if (keyMap.KeyD) {
     velocidadX += 0.01;
-    velocidadAngular = Math.max(velocidadAngular - 0.001, -velocidadAngularMax);
+    velocidadAngular -= aceleracionAngular;
   }
 
   // Actualizar posición y rotación
   delivery.position.x += velocidadX;
   delivery.position.y += velocidadY;
+
+  // Simular rotación del coche
   delivery.rotation.z += velocidadAngular;
+
+  // Actualizar posición de la cámara
+  camera.position.copy(delivery.position).add(cameraOffset);
+  camera.lookAt(delivery.position);
 
   // Renderizar escena
   renderer.render(scene, camera);
