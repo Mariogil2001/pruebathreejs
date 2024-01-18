@@ -33,14 +33,24 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.1;
 
-// Cargar el coche
-loadModel("delivery", scene).then((loadedObject) => {
-// Acceder al objeto 3D
-  delivery = loadedObject.scene;
-  console.log("Se ha cargado delivery");
-}).catch((error) => {
-  console.error("Error cargando el modelo", error);
-});
+// Nueva función para cargar el modelo y luego iniciar la animación
+function loadModelAndAnimate() {
+  loadModel("delivery", scene)
+    .then((loadedObject) => {
+      // Acceder al objeto 3D
+      delivery = loadedObject.scene;
+      console.log("Se ha cargado delivery");
+
+      // Comenzar la animación después de cargar el modelo
+      animate();
+    })
+    .catch((error) => {
+      console.error("Error cargando el modelo", error);
+    });
+}
+
+// Llamar a la función para cargar el modelo y animar
+loadModelAndAnimate();
 
 createCity(scene);
 createlights(10, scene);
@@ -116,4 +126,4 @@ function animate() {
   renderer.render(scene, camera);
 }
 
-animate();
+// animate();
