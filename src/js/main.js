@@ -43,7 +43,7 @@ loadModel("delivery", scene).then((loadedObject) => {
 });
 
 createCity(scene);
-createlights(undefined, scene);
+createlights(10, scene);
 
 // Manejo de teclado
 let keyMap = {
@@ -82,17 +82,22 @@ function animate() {
   velocidadAngular *= friccionAngular;
 
   if (keyMap.KeyW) {
-    velocidadY += 0.01;
+    // Convertir la velocidad a coordenadas del mundo
+    const direccion = new THREE.Vector3(0, 0, -1);
+    direccion.applyAxisAngle(new THREE.Vector3(0, 1, 0), delivery.rotation.y);
+    velocidadX += direccion.x * 0.01;
+    velocidadY += direccion.z * 0.01;
   }
   if (keyMap.KeyS) {
-    velocidadY -= 0.01;
+    const direccion = new THREE.Vector3(0, 0, 1);
+    direccion.applyAxisAngle(new THREE.Vector3(0, 1, 0), delivery.rotation.y);
+    velocidadX += direccion.x * 0.01;
+    velocidadY += direccion.z * 0.01;
   }
   if (keyMap.KeyA) {
-    velocidadX -= 0.01;
     velocidadAngular += aceleracionAngular;
   }
   if (keyMap.KeyD) {
-    velocidadX += 0.01;
     velocidadAngular -= aceleracionAngular;
   }
 
@@ -101,7 +106,7 @@ function animate() {
   delivery.position.y += velocidadY;
 
   // Simular rotación del coche
-  delivery.rotation.z += velocidadAngular;
+  delivery.rotation.y -= velocidadAngular;
 
   // Actualizar posición de la cámara
   camera.position.copy(delivery.position).add(cameraOffset);
