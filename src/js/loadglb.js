@@ -23,3 +23,24 @@ export function loadModel(asset, scene, pos = [0, 0, 0], rot = [-Math.PI / 2, Ma
     });
   });
 }
+
+export async function loadCar(scene) {
+  const loader = new GLTFLoader()
+  const [...model] = await Promise.all([
+      loader.loadAsync('src/Assets/delivery.glb'),
+      loader.loadAsync('src/Assets/wheel.glb'),
+  ])
+  const chassis = model[0].scene
+  const wheels = [
+      model[1].scene,
+      model[1].scene.clone(),
+      model[1].scene.clone(),
+      model[1].scene.clone(),
+  ]
+  wheels[0].position.set(-1, 0, 1)
+  wheels[1].position.set(1, 0, 1)
+  wheels[2].position.set(-1, 0, -1)
+  wheels[3].position.set(1, 0, -1)
+  chassis.add(...wheels)
+  scene.add(chassis)
+};
