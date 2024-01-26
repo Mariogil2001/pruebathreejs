@@ -82,6 +82,8 @@ let keyMap = {
   KeyD: false,
 };
 
+let ultimaTeclaPulsada = "";
+
 let velocidadX = 0;
 let velocidadY = 0;
 let velocidadAngular = 0;
@@ -91,14 +93,17 @@ const friccion = 0.95; // Ajusta según sea necesario
 // const velocidadAngularMax = 0.03; // Ajusta según sea necesario
 const maxWheelRotation = Math.PI / 4; // Define el límite de rotación de las ruedas
 const rotationResetThreshold = 2 * Math.PI; // Define el umbral para resetear la rotación (una vuelta completa)
-
+// Factor de amortiguación para la rotación de las ruedas al soltar las teclas W o S
+const dampingFactor = 0.01;
 
 document.addEventListener("keydown", (e) => {
   keyMap[e.code] = true;
+
 });
 
 document.addEventListener("keyup", (e) => {
   keyMap[e.code] = false;
+  ultimaTeclaPulsada = e.code;
 });
 
 function animate() {
@@ -120,13 +125,36 @@ function animate() {
     direccion.applyAxisAngle(new THREE.Vector3(0, 1, 0), delivery.rotation.y);
     velocidadX += direccion.x * 0.01;
     velocidadY += direccion.z * 0.01;
+    if (wheelLeft.rotation.z !== 0 && (!keyMap.KeyA && !keyMap.KeyD)) {
+      // Amortiguar la rotación de las ruedas al soltar la tecla W
+      if(ultimaTeclaPulsada === "KeyA"){
+        wheelLeft.rotation.z = Math.min(wheelLeft.rotation.z + dampingFactor, 0);
+        wheelRight.rotation.z = Math.min(wheelRight.rotation.z + dampingFactor, 0);
+      } else if ( ultimaTeclaPulsada === "KeyD"){
+        wheelLeft.rotation.z = Math.max(wheelLeft.rotation.z - dampingFactor, 0);
+        wheelRight.rotation.z = Math.max(wheelRight.rotation.z - dampingFactor, 0);
+      }
+
+    }
   }
+
   if (keyMap.KeyS) {
     const direccion = new THREE.Vector3(0, 0, 1);
     direccion.applyAxisAngle(new THREE.Vector3(0, 1, 0), delivery.rotation.y);
     velocidadX += direccion.x * 0.01;
     velocidadY += direccion.z * 0.01;
-  }
+    if (wheelLeft.rotation.z !== 0 && (!keyMap.KeyA && !keyMap.KeyD)) {
+      // Amortiguar la rotación de las ruedas al soltar la tecla W
+      if(ultimaTeclaPulsada === "KeyA"){
+        wheelLeft.rotation.z = Math.min(wheelLeft.rotation.z + dampingFactor, 0);
+        wheelRight.rotation.z = Math.min(wheelRight.rotation.z + dampingFactor, 0);
+      } else if ( ultimaTeclaPulsada === "KeyD"){
+        wheelLeft.rotation.z = Math.max(wheelLeft.rotation.z - dampingFactor, 0);
+        wheelRight.rotation.z = Math.max(wheelRight.rotation.z - dampingFactor, 0);
+      }
+
+    }
+  } 
   if (keyMap.KeyA) {
     velocidadAngular += aceleracionAngular;
     //Simular rotación ruedas
@@ -152,11 +180,14 @@ function animate() {
     delivery.rotation.y = 0;
   }
 
-  console.log(delivery.rotation.y);
+  // console.log(delivery.rotation.y);
+  // console.log("Left " + wheelLeft.rotation.z);
+  // console.log("Right " + wheelRight.rotation.z);
+  console.log("Última tecla levantada:", ultimaTeclaPulsada);
 
   // Actualizar posición de la cámara
-  // camera.position.copy(delivery.position).add(cameraOffset);
-  // camera.lookAt(delivery.position);
+  camera.position.copy(delivery.position).add(cameraOffset);
+  camera.lookAt(delivery.position);
 
   // Renderizar escena
   renderer.render(scene, camera);
